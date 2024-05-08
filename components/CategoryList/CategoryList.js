@@ -1,6 +1,7 @@
 import { StyleSheet, Image, View, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../constants";
 
 const CategoryList = ({
@@ -14,10 +15,11 @@ const CategoryList = ({
     <View style={styles.container}>
       <View style={styles.detailContainer}>
         <View style={styles.imageContainer}>
-          <Image
+          {/* <Image
             source={{ uri: icon }}
             style={{ height: 30, width: "auto", resizeMode: "contain" }}
-          />
+          /> */}
+          <Ionicons name="cart-outline" size={30} color={colors.muted} />
         </View>
         <View style={styles.categoryInfo}>
           <Text style={styles.categoryTitle}>{title}</Text>
@@ -76,6 +78,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     display: "flex",
     justifyContent: "center",
+    alignItems: "center",
 
     backgroundColor: colors.light,
   },

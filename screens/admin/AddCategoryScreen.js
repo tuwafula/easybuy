@@ -46,8 +46,7 @@ const AddCategoryScreen = ({ navigation, route }) => {
     myHeaders.append("Content-Type", "application/json");
 
     var raw = JSON.stringify({
-      title: title,
-      image: image,
+      name: title,
       description: description,
     });
 
@@ -61,24 +60,27 @@ const AddCategoryScreen = ({ navigation, route }) => {
     setIsloading(true);
     //[check validation] -- Start
     if (title == "") {
-      setError("Please enter the product title");
+      setError("Please enter the category title");
       setIsloading(false);
     } else if (description == "") {
-      setError("Please upload the product image");
-      setIsloading(false);
-    } else if (image == null) {
-      setError("Please upload the Catergory image");
+      setError("Please add a category description");
       setIsloading(false);
     } else {
       //[check validation] -- End
-      fetch(network.serverip + "/category", requestOptions) //API call
-        .then((response) => response.json())
+      fetch(`${network.serverip}api/categories/`, requestOptions) //API call
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to add category. Try again later");
+          }
+
+          return response.json();
+        })
         .then((result) => {
           console.log(result);
-          if (result.success == true) {
+          if (result) {
             setIsloading(false);
             setAlertType("success");
-            setError(result.message);
+            // setError(result.message);
             setTitle("");
             setDescription("");
           }

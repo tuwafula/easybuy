@@ -65,21 +65,24 @@ const ViewCategoryScreen = ({ navigation, route }) => {
       redirect: "follow",
     };
     setIsloading(true);
-    fetch(`${network.serverip}/delete-category?id=${id}`, requestOptions) // API call
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.success) {
-          fetchCategories();
-          setError(result.message);
-          setAlertType("success");
-        } else {
-          setError(result.message);
-          setAlertType("error");
+    fetch(`${network.serverip}api/categories/${id}/`, {
+      method: "DELETE",
+    }) // API call
+      .then((response) => {
+        if (!response.ok) {
+          console.log(response);
+          throw new Error("Could not delete category, try again later...");
         }
-        setIsloading(false);
+
+        fetchCategories();
+        // setError(result.message);
+        setAlertType("success");
+        response.json();
       })
+
       .catch((error) => {
         setIsloading(false);
+        setAlertType("error");
         setError(error.message);
         console.log("error", error);
       });
@@ -115,15 +118,21 @@ const ViewCategoryScreen = ({ navigation, route }) => {
       redirect: "follow",
     };
     setIsloading(true);
-    fetch(`${network.serverip}/categories`, requestOptions)
-      .then((response) => response.json())
+    fetch(`${network.serverip}api/categories/`, requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Cannot fetch categories. Try again later");
+        }
+
+        return response.json();
+      })
       .then((result) => {
-        if (result.success) {
-          setCategories(result.categories);
-          setFoundItems(result.categories);
+        if (result) {
+          setCategories(result);
+          setFoundItems(result);
           setError("");
         } else {
-          setError(result.message);
+          // setError(result.message);
         }
         setIsloading(false);
       })
@@ -139,7 +148,7 @@ const ViewCategoryScreen = ({ navigation, route }) => {
     const keyword = filterItem;
     if (keyword !== "") {
       const results = categories?.filter((item) => {
-        return item?.title.toLowerCase().includes(keyword.toLowerCase());
+        return item?.name.toLowerCase().includes(keyword.toLowerCase());
       });
       setFoundItems(results);
     } else {
@@ -210,13 +219,13 @@ const ViewCategoryScreen = ({ navigation, route }) => {
             <CategoryList
               icon={`${network.serverip}/uploads/${item?.icon}`}
               key={index}
-              title={item?.title}
+              title={item?.name}
               description={item?.description}
               onPressEdit={() => {
                 handleEdit(item);
               }}
               onPressDelete={() => {
-                showConfirmDialog(item?._id);
+                showConfirmDialog(item?.id);
               }}
             />
           ))

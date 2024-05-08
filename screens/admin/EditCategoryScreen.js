@@ -35,13 +35,12 @@ const EditCategoryScreen = ({ navigation, route }) => {
     myHeaders.append("Content-Type", "application/json");
 
     var raw = JSON.stringify({
-      title: title,
-      image: image,
+      name: title,
       description: description,
     });
 
     var requestOptions = {
-      method: "POST",
+      method: "PUT",
       headers: myHeaders,
       body: raw,
       redirect: "follow",
@@ -50,26 +49,29 @@ const EditCategoryScreen = ({ navigation, route }) => {
     setIsloading(true);
     //[check validations] -- Start
     if (title == "") {
-      setError("Please enter the product title");
+      setError("Please enter the category title");
       setIsloading(false);
     } else if (description == "") {
-      setError("Please upload the product image");
-      setIsloading(false);
-    } else if (image == null) {
-      setError("Please upload the Catergory image");
+      setError("Please add a category description");
       setIsloading(false);
     } else {
       //[check validations] -- End
-      fetch(`${network.serverip}/update-category?id=${id}`, requestOptions)
-        .then((response) => response.json())
+      fetch(`${network.serverip}api/categories/${id}/`, requestOptions)
+        .then((response) => {
+          if (!response.ok) {
+            console.log(response);
+            throw new Error("Failed to update category, try again later");
+          }
+          return response.json();
+        })
         .then((result) => {
           console.log(result);
-          if (result.success == true) {
+          if (result) {
             setIsloading(false);
             setAlertType("success");
-            setError(result.message);
-            setTitle(result.data.title);
-            setDescription(result.data.description);
+            // setError(result);
+            setTitle(result.name);
+            setDescription(result.description);
           }
         })
         .catch((error) => {
@@ -83,7 +85,7 @@ const EditCategoryScreen = ({ navigation, route }) => {
 
   //inilize the title and description input fields on initial render
   useEffect(() => {
-    setTitle(category?.title);
+    setTitle(category?.name);
     setDescription(category?.description);
   }, []);
 
@@ -141,7 +143,7 @@ const EditCategoryScreen = ({ navigation, route }) => {
         <CustomButton
           text={"Edit Category"}
           onPress={() => {
-            editCategoryHandle(category?._id);
+            editCategoryHandle(category?.id);
           }}
         />
       </View>
