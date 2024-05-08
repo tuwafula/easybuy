@@ -53,20 +53,20 @@ const ViewProductScreen = ({ navigation, route }) => {
   //method to delete the specific order
   const handleDelete = (id) => {
     setIsloading(true);
-    console.log(`${network.serverip}/delete-product?id=${id}`);
-    fetch(`${network.serverip}/delete-product?id=${id}`, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.success) {
-          fetchProduct();
-          setError(result.message);
-          setAlertType("success");
-        } else {
-          setError(result.message);
+    fetch(`${network.serverip}api/products/${id}/`, {
+      method: "DELETE",
+      redirect: "follow",
+    })
+      .then((res) => {
+        if (!res.ok) {
           setAlertType("error");
+          setIsloading(false);
+          throw new Error("Could not delete product, try again later");
         }
-        setIsloading(false);
+        fetchProduct();
+        setAlertType("success");
       })
+
       .catch((error) => {
         setIsloading(false);
         setError(error.message);
@@ -94,34 +94,65 @@ const ViewProductScreen = ({ navigation, route }) => {
   };
 
   //method the fetch the product data from server using API call
-  const fetchProduct = () => {
+
+  const fetchProduct = async () => {
     setIsloading(true);
-    fetch(`${network.serverip}/products`, ProductListRequestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.success) {
-          setProducts(result.data);
-          setFoundItems(result.data);
-          setError("");
-          setIsloading(false);
-        } else {
-          setError(result.message);
-          setIsloading(false);
-        }
-      })
-      .catch((error) => {
-        setError(error.message);
-        console.log("error", error);
-        setIsloading(false);
-      });
+    try {
+      const res = await fetch(
+        `${network.serverip}api/products/`,
+        ProductListRequestOptions
+      );
+
+      console.log(res);
+
+      if (!res.ok) {
+        throw new Error("There was an error");
+      }
+
+      const data = await res.json();
+
+      setProducts(data);
+      setFoundItems(data);
+
+      setError("");
+      setIsloading(false);
+    } catch (error) {
+      console.log("error", error.message);
+      setError(error.message);
+      console.log("error", error);
+      setIsloading(false);
+    }
   };
+
+  // const fetchProduct = () => {
+  //   setIsloading(true);
+  //   fetch(`${network.serverip}api/products/`, ProductListRequestOptions)
+  //     .then((response) => response.json())
+  //     .then((result) => {
+  //       if (result) {
+  //         console.log(result);
+  //         setProducts(result.data);
+  //         setFoundItems(result.data);
+  //         setError("");
+  //         setIsloading(false);
+  //       } else {
+  //         setError(result.message);
+  //         setIsloading(false);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       setError(error.message);
+  //       console.log("error", error);
+  //       setIsloading(false);
+  //     });
+  // };
 
   //method to filer the orders for by title [search bar]
   const filter = () => {
     const keyword = filterItem;
     if (keyword !== "") {
       const results = products?.filter((product) => {
-        return product?.title.toLowerCase().includes(keyword.toLowerCase());
+        return product?.name.toLowerCase().includes(keyword.toLowerCase());
       });
       setFoundItems(results);
     } else {
@@ -192,13 +223,12 @@ const ViewProductScreen = ({ navigation, route }) => {
             return (
               <ProductList
                 key={index}
-                image={`${network.serverip}/uploads/${product?.image}`}
-                title={product?.title}
-                category={product?.category?.title}
+                image={`https://res.cloudinary.com/dz9wzvgbd/${product.image}`}
+                title={product?.name}
+                category={product?.category?.name}
                 price={product?.price}
-                qantity={product?.sku}
                 onPressView={() => {
-                  console.log("view is working " + product._id);
+                  console.log("view is working " + product.id);
                 }}
                 onPressEdit={() => {
                   navigation.navigate("editproduct", {
@@ -207,7 +237,7 @@ const ViewProductScreen = ({ navigation, route }) => {
                   });
                 }}
                 onPressDelete={() => {
-                  showConfirmDialog(product._id);
+                  showConfirmDialog(product.id);
                 }}
               />
             );

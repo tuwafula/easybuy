@@ -42,8 +42,6 @@ const AddProductScreen = ({ navigation, route }) => {
     { label: "Shipped", value: "shipped" },
     { label: "Delivered", value: "delivered" },
   ]);
-  const [formdata2, setFormdata2] = useState("");
-
   var payload = [];
 
   //method to convert the authUser to json object.
@@ -60,25 +58,33 @@ const AddProductScreen = ({ navigation, route }) => {
   //Method : Fetch category data from using API call and store for later you in code
   const fetchCategories = () => {
     var myHeaders = new Headers();
-    myHeaders.append("x-auth-token", getToken(authUser));
+    // myHeaders.append("x-auth-token", getToken(authUser));
 
     var requestOptions = {
       method: "GET",
       headers: myHeaders,
       redirect: "follow",
     };
+
     setIsloading(true);
-    fetch(`${network.serverip}api/categories/`, requestOptions)
-      .then((response) => response.json())
+
+    fetch(`${network.serverip}/api/categories/`, requestOptions)
+      .then((response) => {
+        console.log(response);
+        response.json();
+      })
       .then((result) => {
         console.log(result);
         if (result) {
-          const updatedItems = result.map((cat) => ({
-            label: cat.name,
-            value: cat.id,
-          }));
           setCategories(result);
-          setItems(updatedItems); // Update items here
+          result.forEach((cat) => {
+            let obj = {
+              label: cat.title,
+              value: cat.id,
+            };
+            payload.push(obj);
+          });
+          setItems(payload);
           setError("");
         } else {
           setError(result.message);
@@ -90,71 +96,50 @@ const AddProductScreen = ({ navigation, route }) => {
         setError(error.message);
         console.log("error", error);
       });
+
+    console.log(items);
   };
 
   var myHeaders = new Headers();
-  // myHeaders.append("x-auth-token", authUser.token);
-  // myHeaders.append(Accept, "application/json");
-  myHeaders.append("Content-Type", "multipart/form-data");
+  myHeaders.append("x-auth-token", authUser.token);
+  myHeaders.append("Content-Type", "application/json");
 
   const upload = async () => {
     console.log("upload-F:", image);
 
-    // var formdata = new FormData();
-    // formdata.append("photos", {
-    //   name: new Date() + "_product",
-    //   uri: image,
-    //   type: "image/jpg",
-    // });
-
-    console.log("TUSH", image);
     var formdata = new FormData();
-    formdata.append("photos", {
-      name: "product_" + new Date().getTime() + ".jpg", // Example: "product_1620291567834.jpg"
-      uri: `${image}`, // Assuming 'image' is a local file path
-      type: "image/jpeg", // Adjust the type according to the actual image type
-    });
+    formdata.append("photos", image, "product.png");
 
     var ImageRequestOptions = {
       method: "POST",
       body: formdata,
       redirect: "follow",
     };
-    console.log("IMAGE FR", formdata);
-    setFormdata2(formdata);
 
-    // fetch(
-    //   "https://api-easybuy.herokuapp.com/photos/upload",
-    //   ImageRequestOptions
-    // )
-    //   .then((response) => response.json())
-    //   .then((result) => {
-    //     console.log(result);
-    //   })
-    //   .catch((error) => console.log("error", error));
+    fetch(
+      "https://api-easybuy.herokuapp.com/photos/upload",
+      ImageRequestOptions
+    )
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => console.log("error", error));
   };
-
-  console.log("FORMDATA2", formdata2);
 
   var raw = JSON.stringify({
     name: title,
-    description: description,
-    price: price,
-    quantity: quantity,
-    image: formdata2,
     barcode: barcode,
+    price: price,
+    image: image,
+    description: description,
     category: category,
+    quantity: quantity,
   });
-
-  console.log("CATEGORY_ID", category);
-  console.log("IMAGE FR", image);
-  console.log("RAW", raw);
 
   var requestOptions = {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: myHeaders,
     body: raw,
     redirect: "follow",
   };
@@ -169,18 +154,16 @@ const AddProductScreen = ({ navigation, route }) => {
       quality: 0.5,
     });
 
-    if (!result.canceled) {
-      console.log("IMAGE", result);
-      console.log(result.assets[0].uri);
-      setImage(result.assets[0].uri);
-      // upload();
+    if (!result.cancelled) {
+      console.log(result);
+      setImage(result.uri);
+      upload();
     }
   };
 
   //Method for imput validation and post data to server to insert product using API call
   const addProductHandle = async () => {
     setIsloading(true);
-    upload();
 
     //[check validation] -- Start
     if (title == "") {
@@ -203,15 +186,11 @@ const AddProductScreen = ({ navigation, route }) => {
           `${network.serverip}api/products/`,
           requestOptions
         );
-
         if (!res.ok) {
-          console.log("ERROR RESPONSE", res);
-          throw new Error("Failed to add product. Please try again later.");
+          throw new Error("Something went wrong");
         }
 
         const data = await res.json();
-
-        console.log(data);
 
         if (data) {
           setIsloading(false);
@@ -221,7 +200,7 @@ const AddProductScreen = ({ navigation, route }) => {
         setIsloading(false);
         setError(error.message);
         setAlertType("error");
-        console.log("error", error.message);
+        console.log("error", error);
       }
     }
   };
@@ -229,7 +208,7 @@ const AddProductScreen = ({ navigation, route }) => {
   //call the fetch functions initial render
   useEffect(() => {
     fetchCategories();
-    console.log("CATEGORIES", categories);
+    console.log(categories);
   }, []);
 
   return (

@@ -43,63 +43,129 @@ const DashboardScreen = ({ navigation, route }) => {
   };
 
   //method the fetch the statistics from server using API call
-  const fetchStats = () => {
-    fetch(`${network.serverip}/dashboard`, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.success == true) {
-          //set the fetched data to Data state
-          setData([
-            {
-              id: 1,
-              title: "Users",
-              value: result.data?.usersCount,
-              iconName: "person",
-              type: "parimary",
-              screenName: "viewusers",
-            },
-            {
-              id: 2,
-              title: "Orders",
-              value: result.data?.ordersCount,
-              iconName: "cart",
-              type: "secondary",
-              screenName: "vieworder",
-            },
-            {
-              id: 3,
-              title: "Products",
-              value: result.data?.productsCount,
-              iconName: "md-square",
-              type: "warning",
-              screenName: "viewproduct",
-            },
-            {
-              id: 4,
-              title: "Categories",
-              value: result.data?.categoriesCount,
-              iconName: "menu",
-              type: "muted",
-              screenName: "viewcategories",
-            },
-          ]);
-          setError("");
-          setIsloading(false);
-        } else {
-          console.log(result.err);
-          if (result.err == "jwt expired") {
-            logout();
-          }
-          setError(result.message);
-          setIsloading(false);
-        }
-      })
-      .catch((error) => {
-        setError(error.message);
-        console.log("error", error);
+
+  const fetchStats = async () => {
+    try {
+      const res = await fetch(`${network.serverip}dashboard/`, requestOptions);
+
+      console.log(res);
+
+      if (!res.ok) {
+        throw new Error("There was an error");
+      }
+
+      const data = await res.json();
+      console.log(data);
+
+      if (data) {
+        setData([
+          // {
+          //   id: 1,
+          //   title: "Users",
+          //   value: data.data?.users,
+          //   iconName: "person",
+          //   type: "parimary",
+          //   screenName: "viewusers",
+          // },
+          {
+            id: 2,
+            title: "Orders",
+            value: data.data?.orders,
+            iconName: "cart",
+            type: "secondary",
+            screenName: "vieworder",
+          },
+          {
+            id: 3,
+            title: "Products",
+            value: data.data?.products,
+            iconName: "md-square",
+            type: "warning",
+            screenName: "viewproduct",
+          },
+          {
+            id: 4,
+            title: "Categories",
+            value: data.data?.categories,
+            iconName: "menu",
+            type: "muted",
+            screenName: "viewcategories",
+          },
+        ]);
+
+        console.log("DATA", data);
+
+        setError("");
         setIsloading(false);
-      });
+      }
+    } catch (error) {
+      console.log("error", error.message);
+      setError(error.message);
+      console.log("error", error);
+      setIsloading(false);
+    }
   };
+
+  // const fetchStats = () => {
+  //   fetch(`${network.serverip}/dashboard/`, requestOptions)
+  //     .then((response) => {
+  //       console.log(response);
+  //       response.json();
+  //     })
+  //     .then((result) => {
+  //       if (result) {
+  //         //set the fetched data to Data state
+  //         setData([
+  //           {
+  //             id: 1,
+  //             title: "Users",
+  //             value: result.data?.users,
+  //             iconName: "person",
+  //             type: "parimary",
+  //             screenName: "viewusers",
+  //           },
+  //           {
+  //             id: 2,
+  //             title: "Orders",
+  //             value: result.data?.orders,
+  //             iconName: "cart",
+  //             type: "secondary",
+  //             screenName: "vieworder",
+  //           },
+  //           {
+  //             id: 3,
+  //             title: "Products",
+  //             value: result.data?.products,
+  //             iconName: "md-square",
+  //             type: "warning",
+  //             screenName: "viewproduct",
+  //           },
+  //           {
+  //             id: 4,
+  //             title: "Categories",
+  //             value: result.data?.categories,
+  //             iconName: "menu",
+  //             type: "muted",
+  //             screenName: "viewcategories",
+  //           },
+  //         ]);
+  //         setError("");
+  //         setIsloading(false);
+  //       } else {
+  //         console.log(result.err);
+  //         if (result.err == "jwt expired") {
+  //           logout();
+  //         }
+  //         setError(result.message);
+  //         setIsloading(false);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       setError(error.message);
+  //       console.log("error", error);
+  //       setIsloading(false);
+  //     });
+  // };
 
   //method call on Pull refresh
   const handleOnRefresh = () => {
@@ -207,7 +273,7 @@ const DashboardScreen = ({ navigation, route }) => {
               }
               type="morden"
             />
-            <OptionList
+            {/* <OptionList
               text={"Users"}
               Icon={Ionicons}
               iconName={"person"}
@@ -215,7 +281,7 @@ const DashboardScreen = ({ navigation, route }) => {
                 navigation.navigate("viewusers", { authUser: user })
               }
               type="morden"
-            />
+            /> */}
 
             <View style={{ height: 20 }}></View>
           </ScrollView>

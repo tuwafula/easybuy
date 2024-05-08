@@ -40,7 +40,7 @@ const UpdatePasswordScreen = ({ navigation, route }) => {
 
       try {
         const res = await fetch(
-          `${network.serverip}auth/change_password/${userID}`,
+          `${network.serverip}auth/change_password/${userID}/`,
           requestOptions
         );
 
