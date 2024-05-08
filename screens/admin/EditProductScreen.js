@@ -24,12 +24,12 @@ const EditProductScreen = ({ navigation, route }) => {
   const [label, setLabel] = useState("Updating...");
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
-  const [sku, setSku] = useState("");
+  const [barcode, setBarcode] = useState("");
   const [image, setImage] = useState("");
   const [error, setError] = useState("");
   const [quantity, setQuantity] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("garments");
+  const [category, setCategory] = useState("");
   const [alertType, setAlertType] = useState("error");
 
   var myHeaders = new Headers();
@@ -37,17 +37,17 @@ const EditProductScreen = ({ navigation, route }) => {
   myHeaders.append("Content-Type", "application/json");
 
   var raw = JSON.stringify({
-    title: title,
-    sku: sku,
+    name: title,
+    barcode: barcode,
     price: price,
-    image: image,
+    image: product.image,
     description: description,
-    category: category,
+    category: Number(category),
     quantity: quantity,
   });
 
   var requestOptions = {
-    method: "POST",
+    method: "PUT",
     headers: myHeaders,
     body: raw,
     redirect: "follow",
@@ -63,7 +63,7 @@ const EditProductScreen = ({ navigation, route }) => {
       quality: 0.5,
     });
     console.log(result);
-    if (!result.cancelled) {
+    if (!result.canceled) {
       setImage(result.uri);
     }
   };
@@ -84,21 +84,23 @@ const EditProductScreen = ({ navigation, route }) => {
       setError("Please upload the product image");
       setIsloading(false);
     } else {
-      console.log(`${network.serverip}"/update-product?id=${product._id}"`);
-      fetch(
-        `${network.serverip}/update-product?id=${product._id}`,
-        requestOptions
-      )
-        .then((response) => response.json())
-        .then((result) => {
-          if (result.success == true) {
-            setIsloading(false);
-            setError(result.message);
-            setPrice("");
-            setQuantity("");
-            setSku("");
-            setTitle("");
+      // console.log(`${network.serverip}api/products/${product.id}/`);
+      fetch(`${network.serverip}api/products/${product.id}/`, requestOptions)
+        .then((response) => {
+          if (!response.ok) {
+            console.log(response);
+            throw new Error("Failed to update product. Try again later");
           }
+          return response.json();
+        })
+        .then((result) => {
+          setIsloading(false);
+          // setError(result.message);
+          setPrice("");
+          setQuantity("");
+          setBarcode("");
+          setTitle("");
+          setDescription("");
         })
         .catch((error) => {
           setIsloading(false);
@@ -110,12 +112,13 @@ const EditProductScreen = ({ navigation, route }) => {
 
   // set all the input fields and image on initial render
   useEffect(() => {
-    setImage(`${network.serverip}/uploads/${product?.image}`);
-    setTitle(product.title);
-    setSku(product.sku);
+    setImage(`https://res.cloudinary.com/dz9wzvgbd/${product?.image}`);
+    setTitle(product.name);
+    setBarcode(product.barcode);
     setQuantity(product.quantity.toString());
     setPrice(product.price.toString());
     setDescription(product.description);
+    setCategory(product.category);
   }, []);
 
   return (
@@ -151,7 +154,9 @@ const EditProductScreen = ({ navigation, route }) => {
             {image ? (
               <TouchableOpacity style={styles.imageHolder} onPress={pickImage}>
                 <Image
-                  source={{ uri: image }}
+                  source={{
+                    uri: image,
+                  }}
                   style={{ width: 200, height: 200 }}
                 />
               </TouchableOpacity>
@@ -162,9 +167,9 @@ const EditProductScreen = ({ navigation, route }) => {
             )}
           </View>
           <CustomInput
-            value={sku}
-            setValue={setSku}
-            placeholder={"SKU"}
+            value={barcode}
+            setValue={setBarcode}
+            placeholder={"Barcode"}
             placeholderTextColor={colors.muted}
             radius={5}
           />
