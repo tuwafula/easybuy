@@ -115,14 +115,14 @@ const reducer = (state = [], action) => {
 
     case actions.INCREASE_CART_ITEM_QUANTITY:
       return state.map((item) =>
-        item._id === action.payload.id && action.payload.type === "increase"
+        item.id === action.payload.id && action.payload.type === "increase"
           ? { ...item, quantity: item.quantity + 1 }
           : item
       );
 
     case actions.DECREASE_CART_ITEM_QUANTITY:
       return state.map((item) =>
-        item._id === action.payload.id && action.payload.type === "decrease"
+        item.id === action.payload.id && action.payload.type === "decrease"
           ? { ...item, quantity: item.quantity - 1 }
           : item
       );

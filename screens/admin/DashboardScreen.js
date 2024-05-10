@@ -79,7 +79,7 @@ const DashboardScreen = ({ navigation, route }) => {
             id: 3,
             title: "Products",
             value: data.data?.products,
-            iconName: "md-square",
+            iconName: "square",
             type: "warning",
             screenName: "viewproduct",
           },
@@ -243,7 +243,7 @@ const DashboardScreen = ({ navigation, route }) => {
             <OptionList
               text={"Products"}
               Icon={Ionicons}
-              iconName={"md-square"}
+              iconName={"square"}
               onPress={() =>
                 navigation.navigate("viewproduct", { authUser: user })
               }

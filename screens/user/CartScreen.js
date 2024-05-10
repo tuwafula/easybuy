@@ -38,6 +38,7 @@ const CartScreen = ({ navigation }) => {
   //method to increase the quantity of the item in(cart) redux
   const increaseQuantity = (id, quantity, avaiableQuantity) => {
     if (avaiableQuantity > quantity) {
+      console.log("ID", id);
       increaseCartItemQuantity({ id: id, type: "increase" });
       setRefresh(!refresh);
     }

@@ -33,6 +33,7 @@ const CheckoutScreen = ({ navigation, route }) => {
   const [city, setCity] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
   const [zipcode, setZipcode] = useState("");
+  const [user, setUser] = useState("");
 
   //method to remove the authUser from aysnc storage and navigate to login
   const logout = async () => {
@@ -57,8 +58,7 @@ const CheckoutScreen = ({ navigation, route }) => {
     // fetch the cart items from redux and set the total cost
     cartproduct.forEach((product) => {
       let obj = {
-        productId: product.id,
-        price: product.price,
+        product: product.id,
         quantity: product.quantity,
       };
       totalamount += parseInt(product.price) * parseInt(product.quantity);
@@ -66,16 +66,15 @@ const CheckoutScreen = ({ navigation, route }) => {
     });
 
     var raw = JSON.stringify({
-      items: payload,
-      amount: totalamount,
-      discount: 0,
-      payment_type: "cod",
-      country: country,
-      status: "pending",
+      products: payload,
+      customer: user.id,
+      total_price: totalamount,
       city: city,
-      zipcode: zipcode,
-      shippingAddress: streetAddress,
+      status: "pending",
+      shipping_address: streetAddress,
     });
+
+    console.log(raw);
 
     var requestOptions = {
       method: "POST",
@@ -84,15 +83,17 @@ const CheckoutScreen = ({ navigation, route }) => {
       redirect: "follow",
     };
 
-    fetch(network.serverip + "/checkout", requestOptions) //API call
-      .then((response) => response.json())
+    fetch(`${network.serverip}api/orders/`, requestOptions) //API call
+      .then((response) => {
+        if (!response.ok) {
+          console.log(response);
+          throw new Error("Could not place order, try again later");
+        }
+        return response.json();
+      })
       .then((result) => {
         console.log("Checkout=>", result);
-        if (result.err === "jwt expired") {
-          setIsloading(false);
-          logout();
-        }
-        if (result.success == true) {
+        if (result) {
           setIsloading(false);
           emptyCart("empty");
           navigation.replace("orderconfirm");
@@ -116,7 +117,69 @@ const CheckoutScreen = ({ navigation, route }) => {
         return accumulator + object.price * object.quantity;
       }, 0)
     );
+
+    setDeliveryCost(totalCost * 0.1);
+
+    (async function () {
+      const value = await AsyncStorage.getItem("authUser"); // get authUser from async storage
+      token = JSON.parse(value);
+      console.log("VALUE", value);
+
+      if (value) {
+        try {
+          const res = await fetch(`${network.serverip}auth/get-user/`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log("RESPONSE", res);
+
+          if (!res.ok) {
+            throw new Error("Could not get user");
+          }
+
+          const data = await res.json();
+          setUser(data);
+          // console.log("USERID", data.id);
+        } catch (error) {
+          console.log("error", error.message);
+        }
+      }
+    })();
   }, []);
+
+  // useEffect(() => {
+  //   (async function () {
+  //     const value = await AsyncStorage.getItem("authUser"); // get authUser from async storage
+  //     token = JSON.parse(value);
+  //     console.log("VALUE", value);
+
+  //     if (value) {
+  //       try {
+  //         const res = await fetch(`${network.serverip}auth/get-user/`, {
+  //           method: "GET",
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         });
+
+  //         console.log("RESPONSE", res);
+
+  //         if (!res.ok) {
+  //           throw new Error("Could not get user");
+  //         }
+
+  //         const data = await res.json();
+  //         setUser(data);
+  //         // console.log("USERID", data.id);
+  //       } catch (error) {
+  //         console.log("error", error.message);
+  //       }
+  //     }
+  //   })();
+  // }, []);
 
   return (
     <View style={styles.container}>
@@ -160,7 +223,7 @@ const CheckoutScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.list}>
             <Text>Delivery</Text>
-            <Text>{deliveryCost}$</Text>
+            <Text>{totalCost * 0.2}$</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.primaryTextSm}>Total</Text>
@@ -169,8 +232,8 @@ const CheckoutScreen = ({ navigation, route }) => {
             </Text>
           </View>
         </View>
-        <Text style={styles.primaryText}>Contact</Text>
-        <View style={styles.listContainer}>
+        {/* <Text style={styles.primaryText}>Contact</Text> */}
+        {/* <View style={styles.listContainer}>
           <View style={styles.list}>
             <Text style={styles.secondaryTextSm}>Email</Text>
             <Text style={styles.secondaryTextSm}>
@@ -181,7 +244,7 @@ const CheckoutScreen = ({ navigation, route }) => {
             <Text style={styles.secondaryTextSm}>Phone</Text>
             <Text style={styles.secondaryTextSm}>+92 3410988683</Text>
           </View>
-        </View>
+        </View> */}
         <Text style={styles.primaryText}>Address</Text>
         <View style={styles.listContainer}>
           <TouchableOpacity
