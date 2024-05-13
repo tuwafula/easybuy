@@ -51,12 +51,18 @@ const ViewUsersScreen = ({ navigation, route }) => {
       redirect: "follow",
     };
     setIsloading(true);
-    fetch(`${network.serverip}/admin/users`, requestOptions)
-      .then((response) => response.json())
+    fetch(`${network.serverip}auth/users/`, requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          console.log(response);
+          throw new Error("Could not get users, try again later");
+        }
+        return response.json();
+      })
       .then((result) => {
-        if (result.success) {
-          setUsers(result.data);
-          setFoundItems(result.data);
+        if (result) {
+          setUsers(result);
+          setFoundItems(result);
           setError("");
         } else {
           setError(result.message);
@@ -77,7 +83,7 @@ const ViewUsersScreen = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
-  //method to filer the orders for by title [search bar]
+  //method to filer the users for by name [search bar]
   const filter = () => {
     const keyword = filterItem;
     if (keyword !== "") {
@@ -152,7 +158,7 @@ const ViewUsersScreen = ({ navigation, route }) => {
               key={index}
               username={item?.name}
               email={item?.email}
-              usertype={item?.userType}
+              usertype={item?.is_staff ? "ADMIN" : "REGULAR"}
             />
           ))
         )}

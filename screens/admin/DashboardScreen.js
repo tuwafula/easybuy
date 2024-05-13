@@ -59,14 +59,14 @@ const DashboardScreen = ({ navigation, route }) => {
 
       if (data) {
         setData([
-          // {
-          //   id: 1,
-          //   title: "Users",
-          //   value: data.data?.users,
-          //   iconName: "person",
-          //   type: "parimary",
-          //   screenName: "viewusers",
-          // },
+          {
+            id: 1,
+            title: "Users",
+            value: data.data?.users,
+            iconName: "person",
+            type: "parimary",
+            screenName: "viewusers",
+          },
           {
             id: 2,
             title: "Orders",
@@ -273,7 +273,7 @@ const DashboardScreen = ({ navigation, route }) => {
               }
               type="morden"
             />
-            {/* <OptionList
+            <OptionList
               text={"Users"}
               Icon={Ionicons}
               iconName={"person"}
@@ -281,7 +281,7 @@ const DashboardScreen = ({ navigation, route }) => {
                 navigation.navigate("viewusers", { authUser: user })
               }
               type="morden"
-            /> */}
+            />
 
             <View style={{ height: 20 }}></View>
           </ScrollView>
