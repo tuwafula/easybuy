@@ -22,47 +22,53 @@ function getTime(date) {
   return time.join(""); // return adjusted time or original string
 }
 
-const dateFormat = (datex) => {
+// const dateFormat = (datex) => {
+//   let t = new Date(datex);
+//   const date = ("0" + t.getDate()).slice(-2);
+//   const month = ("0" + (t.getMonth() + 1)).slice(-2);
+//   const year = t.getFullYear();
+//   const newDate = `${date}-${month}-${year}`;
+
+//   return newDate;
+// };
+
+function dateFormat(datex) {
   let t = new Date(datex);
+
   const date = ("0" + t.getDate()).slice(-2);
   const month = ("0" + (t.getMonth() + 1)).slice(-2);
   const year = t.getFullYear();
-  const hours = ("0" + t.getHours()).slice(-2);
-  const minutes = ("0" + t.getMinutes()).slice(-2);
-  const seconds = ("0" + t.getSeconds()).slice(-2);
   const newDate = `${date}-${month}-${year}`;
 
   return newDate;
-};
+}
 
 const OrderList = ({ item, onPress }) => {
   const [totalCost, setTotalCost] = useState(0);
   const [quantity, setQuantity] = useState(0);
+  const [date2, setDate] = useState("");
+  const [time, setTime] = useState("");
 
   useEffect(() => {
     let packageItems = 0;
-    item?.items.forEach(() => {
+    item?.products.forEach(() => {
       ++packageItems;
     });
     setQuantity(packageItems);
-    setTotalCost(
-      item?.items.reduce((accumulator, object) => {
-        return (accumulator + object.price) * object.quantity;
-      }, 0)
-    );
+    setTotalCost(item.total_price);
+    setTime(() => getTime(item?.created_at));
+    setDate(() => dateFormat(item?.created_at));
   }, []);
 
   return (
     <View style={styles.container}>
       <View style={styles.innerRow}>
         <View>
-          <Text style={styles.primaryText}>Order # {item?.orderId}</Text>
+          <Text style={styles.primaryText}>{item?.name}</Text>
         </View>
         <View style={styles.timeDateContainer}>
-          <Text style={styles.secondaryTextSm}>
-            {dateFormat(item?.createdAt)}
-          </Text>
-          <Text style={styles.secondaryTextSm}>{getTime(item?.createdAt)}</Text>
+          <Text style={styles.secondaryTextSm}>{date2}</Text>
+          <Text style={styles.secondaryTextSm}>{time}</Text>
         </View>
       </View>
       {item?.user?.name && (

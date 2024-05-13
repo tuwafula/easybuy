@@ -64,12 +64,19 @@ const ViewOrdersScreen = ({ navigation, route }) => {
       redirect: "follow",
     };
     setIsloading(true);
-    fetch(`${network.serverip}/admin/orders`, requestOptions)
-      .then((response) => response.json())
+    fetch(`${network.serverip}api/get-orders/`, requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          console.log(response);
+          setError(error.message);
+          throw new Error("Could not get orders, try again later");
+        }
+        return response.json();
+      })
       .then((result) => {
-        if (result.success) {
-          setOrders(result.data);
-          setFoundItems(result.data);
+        if (result) {
+          setOrders(result);
+          setFoundItems(result);
           setError("");
         } else {
           setError(result.message);

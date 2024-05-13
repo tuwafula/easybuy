@@ -78,6 +78,20 @@ const MyOrderDetailScreen = ({ navigation, route }) => {
     return newDate;
   };
 
+  const dateFormat2 = (datex) => {
+    let t = new Date(datex);
+    const date = ("0" + t.getDate()).slice(-2);
+    const month = ("0" + (t.getMonth() + 1)).slice(-2);
+    const year = t.getFullYear();
+    const hours = ("0" + t.getHours()).slice(-2);
+    const minutes = ("0" + t.getMinutes()).slice(-2);
+    const seconds = ("0" + t.getSeconds()).slice(-2);
+    const time = tConvert(`${hours}:${minutes}:${seconds}`);
+    const newDate = `${date}-${month}-${year}`;
+
+    return newDate;
+  };
+
   // set total cost, order detail, order status on initial render
   useEffect(() => {
     setError("");
@@ -88,16 +102,11 @@ const MyOrderDetailScreen = ({ navigation, route }) => {
       setStatusDisable(false);
     }
     setValue(orderDetail?.status);
-    setAddress(
-      orderDetail?.country +
-        ", " +
-        orderDetail?.city +
-        ", " +
-        orderDetail?.shippingAddress
-    );
+    setAddress(orderDetail?.city + ", " + orderDetail?.shipping_address);
     setTotalCost(
-      orderDetail?.items.reduce((accumulator, object) => {
-        return (accumulator + object.price) * object.quantity;
+      orderDetail?.products.reduce((accumulator, object) => {
+        const newTotal = object.product.price * object.quantity;
+        return accumulator + newTotal;
       }, 0)
     );
     if (orderDetail?.status === "pending") {
@@ -148,26 +157,24 @@ const MyOrderDetailScreen = ({ navigation, route }) => {
         </View>
         <View style={styles.ShipingInfoContainer}>
           <Text style={styles.secondarytextSm}>{address}</Text>
-          <Text style={styles.secondarytextSm}>{orderDetail?.zipcode}</Text>
+          {/* <Text style={styles.secondarytextSm}>{orderDetail?.zipcode}</Text> */}
         </View>
         <View>
           <Text style={styles.containerNameText}>Order Info</Text>
         </View>
         <View style={styles.orderInfoContainer}>
-          <Text style={styles.secondarytextMedian}>
-            Order # {orderDetail?.orderId}
-          </Text>
+          <Text style={styles.secondarytextMedian}>{orderDetail?.name}</Text>
           <Text style={styles.secondarytextSm}>
-            Ordered on {dateFormat(orderDetail?.updatedAt)}
+            Ordered on {dateFormat(orderDetail?.created_at)}
           </Text>
-          {orderDetail?.shippedOn && (
+          {orderDetail?.created_at && (
             <Text style={styles.secondarytextSm}>
-              Shipped on {orderDetail?.shippedOn}
+              Shipped on {dateFormat2(orderDetail?.created_at)}
             </Text>
           )}
           {orderDetail?.deliveredOn && (
             <Text style={styles.secondarytextSm}>
-              Delivered on {orderDetail?.deliveredOn}
+              Delivered on {dateFormat(orderDetail?.deliveredOn)}
             </Text>
           )}
           <View style={{ marginTop: 15, width: "100%" }}>
@@ -192,18 +199,18 @@ const MyOrderDetailScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.orderItemContainer}>
             <Text style={styles.orderItemText}>
-              Order on : {orderDetail?.updatedAt}
+              Order on : {dateFormat(orderDetail?.created_at)}
             </Text>
           </View>
           <ScrollView
             style={styles.orderSummaryContainer}
             nestedScrollEnabled={true}
           >
-            {orderDetail?.items.map((product, index) => (
+            {orderDetail?.products.map((product, index) => (
               <View key={index}>
                 <BasicProductList
-                  title={product?.productId?.title}
-                  price={product?.price}
+                  title={product?.product.name}
+                  price={product?.product.price}
                   quantity={product?.quantity}
                 />
               </View>

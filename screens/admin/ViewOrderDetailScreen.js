@@ -60,40 +60,48 @@ const ViewOrderDetailScreen = ({ navigation, route }) => {
     return newDate;
   };
 
+  const raw = {
+    customer: orderDetail.customer,
+    shipping_address: orderDetail.shipping_address,
+    city: orderDetail.city,
+    total_price: orderDetail.total_price,
+    status: value,
+  };
+
   //method to update the status using API call
   const handleUpdateStatus = (id) => {
     setIsloading(true);
     setError("");
-    setAlertType("error");
-    var myHeaders = new Headers();
-    myHeaders.append("x-auth-token", Token);
 
-    var requestOptions = {
-      method: "GET",
-      headers: myHeaders,
-      redirect: "follow",
-    };
-    console.log(
-      `Link:${network.serverip}/admin/order-status?orderId=${id}&status=${value}`
-    );
+    console.log(raw);
+    console.log(`Link:${network.serverip}api/update-orders/${id}/`);
 
-    fetch(
-      `${network.serverip}/admin/order-status?orderId=${id}&status=${value}`,
-      requestOptions
-    ) //API call
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.success == true) {
-          setError(`Order status is successfully updated to ${value}`);
-          setAlertType("success");
-          setIsloading(false);
+    fetch(`${network.serverip}api/update-orders/${id}/`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(raw), // Make sure to stringify the body
+    })
+      .then((response) => {
+        console.log(response);
+        if (!response.ok) {
+          setError("Could not get orders, try again later"); // Set error message directly
+          throw new Error("Could not get orders, try again later");
         }
+        return response.json();
+      })
+      .then((result) => {
+        if (result) {
+          setAlertType("success");
+          setError("Order updated successfully"); // Reset error message
+        }
+        setIsloading(false);
       })
       .catch((error) => {
-        setAlertType("error");
-        setError(error);
-        console.log("error", error);
         setIsloading(false);
+        setError(error.message);
+        console.log("error", error);
       });
   };
 
@@ -107,16 +115,11 @@ const ViewOrderDetailScreen = ({ navigation, route }) => {
       setStatusDisable(false);
     }
     setValue(orderDetail?.status);
-    setAddress(
-      orderDetail?.country +
-        ", " +
-        orderDetail?.city +
-        ", " +
-        orderDetail?.shippingAddress
-    );
+    setAddress(orderDetail?.city + ", " + orderDetail?.shipping_address);
     setTotalCost(
-      orderDetail?.items.reduce((accumulator, object) => {
-        return (accumulator + object.price) * object.quantity;
+      orderDetail?.products.reduce((accumulator, object) => {
+        const newTotal = object.product.price * object.quantity;
+        return accumulator + newTotal;
       }, 0) // calculate the total cost
     );
   }, []);
@@ -154,28 +157,28 @@ const ViewOrderDetailScreen = ({ navigation, route }) => {
       >
         <View style={styles.containerNameContainer}>
           <View>
-            <Text style={styles.containerNameText}>Ship & Bill to</Text>
+            <Text style={styles.containerNameText}>Ship to</Text>
           </View>
         </View>
         <View style={styles.ShipingInfoContainer}>
-          <Text style={styles.secondarytextMedian}>
+          {/* <Text style={styles.secondarytextMedian}>
             {orderDetail?.user?.name}
-          </Text>
-          <Text style={styles.secondarytextMedian}>
+          </Text> */}
+          {/* <Text style={styles.secondarytextMedian}>
             {orderDetail?.user?.email}
-          </Text>
+          </Text> */}
           <Text style={styles.secondarytextSm}>{address}</Text>
-          <Text style={styles.secondarytextSm}>{orderDetail?.zipcode}</Text>
+          <Text style={styles.secondarytextSm}>
+            {orderDetail?.shipping_address}
+          </Text>
         </View>
         <View>
           <Text style={styles.containerNameText}>Order Info</Text>
         </View>
         <View style={styles.orderInfoContainer}>
-          <Text style={styles.secondarytextMedian}>
-            Order # {orderDetail?.orderId}
-          </Text>
+          <Text style={styles.secondarytextMedian}>{orderDetail?.name}</Text>
           <Text style={styles.secondarytextSm}>
-            Ordered on {dateFormat(orderDetail?.updatedAt)}
+            Ordered on {dateFormat(orderDetail?.created_at)}
           </Text>
           {orderDetail?.shippedOn && (
             <Text style={styles.secondarytextSm}>
@@ -200,18 +203,18 @@ const ViewOrderDetailScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.orderItemContainer}>
             <Text style={styles.orderItemText}>
-              Order on : {dateFormat(orderDetail?.updatedAt)}
+              Order on : {dateFormat(orderDetail?.created_at)}
             </Text>
           </View>
           <ScrollView
             style={styles.orderSummaryContainer}
             nestedScrollEnabled={true}
           >
-            {orderDetail?.items.map((product, index) => (
+            {orderDetail?.products.map((product, index) => (
               <View key={index}>
                 <BasicProductList
-                  title={product?.productId?.title}
-                  price={product?.price}
+                  title={product?.product.name}
+                  price={product?.product.price}
                   quantity={product?.quantity}
                 />
               </View>
@@ -246,7 +249,7 @@ const ViewOrderDetailScreen = ({ navigation, route }) => {
           {statusDisable == false ? (
             <CustomButton
               text={"Update"}
-              onPress={() => handleUpdateStatus(orderDetail?._id)}
+              onPress={() => handleUpdateStatus(orderDetail?.id)}
             />
           ) : (
             <CustomButton text={"Update"} disabled />

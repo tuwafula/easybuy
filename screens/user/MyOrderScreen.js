@@ -78,14 +78,18 @@ const MyOrderScreen = ({ navigation, route }) => {
       redirect: "follow",
     };
     setIsloading(true);
-    fetch(`${network.serverip}/orders`, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        if (result?.err === "jwt expired") {
-          logout();
+    fetch(`${network.serverip}api/get-orders/`, requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          console.log(response);
+          throw new Error("Could not fetch orders, try again later");
         }
-        if (result.success) {
-          setOrders(result.data);
+
+        return response.json();
+      })
+      .then((result) => {
+        if (result) {
+          setOrders(result);
           setError("");
         }
         setIsloading(false);
