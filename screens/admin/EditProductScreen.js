@@ -95,7 +95,8 @@ const EditProductScreen = ({ navigation, route }) => {
         })
         .then((result) => {
           setIsloading(false);
-          // setError(result.message);
+          setAlertType("success");
+          setError("Product updated successfully");
           setPrice("");
           setQuantity("");
           setBarcode("");

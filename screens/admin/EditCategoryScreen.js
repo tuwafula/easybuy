@@ -69,7 +69,7 @@ const EditCategoryScreen = ({ navigation, route }) => {
           if (result) {
             setIsloading(false);
             setAlertType("success");
-            // setError(result);
+            setError("Category updated successfully");
             setTitle(result.name);
             setDescription(result.description);
           }

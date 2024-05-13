@@ -216,6 +216,7 @@ const AddProductScreen = ({ navigation, route }) => {
         if (data) {
           setIsloading(false);
           setAlertType("success");
+          setError("Product added successfully");
         }
       } catch (error) {
         setIsloading(false);
