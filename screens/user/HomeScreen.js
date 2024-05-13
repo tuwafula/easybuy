@@ -26,22 +26,23 @@ import { SliderBox } from "react-native-image-slider-box";
 
 const category = [
   {
-    _id: "62fe244f58f7aa8230817f89",
+    // _id: "62fe244f58f7aa8230817f89",
+    id: 1,
     title: "Garments",
     image: require("../../assets/icons/garments.png"),
   },
   {
     _id: "62fe243858f7aa8230817f86",
-    title: "Electornics",
+    title: "Electronics",
     image: require("../../assets/icons/electronics.png"),
   },
   {
-    _id: "62fe241958f7aa8230817f83",
-    title: "Cosmentics",
+    id: 3,
+    title: "Kitchen ware",
     image: require("../../assets/icons/cosmetics.png"),
   },
   {
-    _id: "62fe246858f7aa8230817f8c",
+    id: 2,
     title: "Groceries",
     image: require("../../assets/icons/grocery.png"),
   },

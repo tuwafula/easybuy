@@ -68,22 +68,22 @@ const CategoriesScreen = ({ navigation, route }) => {
   };
   const category = [
     {
-      _id: "62fe244f58f7aa8230817f89",
+      id: 1,
       title: "Garments",
       image: require("../../assets/icons/garments.png"),
     },
     {
       _id: "62fe243858f7aa8230817f86",
-      title: "Electornics",
+      title: "Electronics",
       image: require("../../assets/icons/electronics.png"),
     },
     {
-      _id: "62fe241958f7aa8230817f83",
-      title: "Cosmentics",
+      id: 3,
+      title: "Kitchen ware",
       image: require("../../assets/icons/cosmetics.png"),
     },
     {
-      _id: "62fe246858f7aa8230817f8c",
+      id: 2,
       title: "Groceries",
       image: require("../../assets/icons/grocery.png"),
     },
@@ -96,12 +96,21 @@ const CategoriesScreen = ({ navigation, route }) => {
       method: "GET",
       redirect: "follow",
     };
-    fetch(`${network.serverip}/products`, headerOptions)
-      .then((response) => response.json())
+    fetch(`${network.serverip}api/products/`, headerOptions)
+      .then((response) => {
+        console.log("Working", response);
+        if (!response.ok) {
+          console.log(response);
+          throw new Error("Could not get categories, try again later");
+        }
+
+        return response.json();
+      })
       .then((result) => {
-        if (result.success) {
-          setProducts(result.data);
-          setFoundItems(result.data);
+        console.log(result);
+        if (result) {
+          setProducts(result);
+          setFoundItems(result);
           setError("");
         } else {
           setError(result.message);
@@ -113,7 +122,7 @@ const CategoriesScreen = ({ navigation, route }) => {
       });
   };
 
-  //listener call on tab focus and initlize categoryID
+  //listener call on tab focus and initialize categoryID
   navigation.addListener("focus", () => {
     if (categoryID) {
       setSelectedTab(categoryID);
@@ -125,7 +134,7 @@ const CategoriesScreen = ({ navigation, route }) => {
     const keyword = filterItem;
     if (keyword !== "") {
       const results = products.filter((product) => {
-        return product?.title.toLowerCase().includes(keyword.toLowerCase());
+        return product?.name.toLowerCase().includes(keyword.toLowerCase());
       });
 
       setFoundItems(results);
@@ -204,9 +213,8 @@ const CategoriesScreen = ({ navigation, route }) => {
           )}
         />
 
-        {foundItems.filter(
-          (product) => product?.category?._id === selectedTab?._id
-        ).length === 0 ? (
+        {foundItems.filter((product) => product?.category === selectedTab?.id)
+          .length === 0 ? (
           <View style={styles.noItemContainer}>
             <View
               style={{
@@ -231,7 +239,7 @@ const CategoriesScreen = ({ navigation, route }) => {
         ) : (
           <FlatList
             data={foundItems.filter(
-              (product) => product?.category?._id === selectedTab?._id
+              (product) => product?.category === selectedTab?.id
             )}
             refreshControl={
               <RefreshControl
@@ -251,8 +259,8 @@ const CategoriesScreen = ({ navigation, route }) => {
               >
                 <ProductCard
                   cardSize={"large"}
-                  name={product.title}
-                  image={`${network.serverip}/uploads/${product.image}`}
+                  name={product.name}
+                  image={`https://res.cloudinary.com/dz9wzvgbd/${product.image}`}
                   price={product.price}
                   quantity={product.quantity}
                   onPress={() => handleProductPress(product)}
