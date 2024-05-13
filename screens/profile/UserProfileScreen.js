@@ -53,12 +53,12 @@ const UserProfileScreen = ({ navigation, route }) => {
           iconName={"person"}
           onPress={() => navigation.navigate("myaccount", { user: userInfo })}
         />
-        <OptionList
+        {/* <OptionList
           text={"Wishlist"}
           Icon={Ionicons}
           iconName={"heart"}
           onPress={() => navigation.navigate("mywishlist", { user: userInfo })}
-        />
+        /> */}
         {/* !For future use --- */}
         {/* <OptionList
           text={"Settings"}

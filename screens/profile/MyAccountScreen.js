@@ -133,13 +133,13 @@ const MyAccountScreen = ({ navigation, route }) => {
               }) // navigate to updatepassword
           }
         />
-        <OptionList
+        {/* <OptionList
           text={"Delete My Account"}
           Icon={MaterialIcons}
           iconName={"delete"}
           type={"danger"}
           onPress={() => showConfirmDialog(userID)}
-        />
+        /> */}
       </View>
     </View>
   );
